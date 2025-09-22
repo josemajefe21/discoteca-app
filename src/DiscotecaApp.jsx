@@ -637,7 +637,7 @@ export default function App() {
         {tab === "data" && <DataIO dishes={dishes} votes={votes} />}
 
         <footer className="opacity-70 text-xs text-center pt-6">
-          Discoteca • Ranking App — estética inspirada en 50 Best (no oficial). Hecho con ❤️ para los jueves.
+          Discoteca • Ranking App — estética gastronómica. Hecho con ❤️ para los jueves.
         </footer>
       </div>
     </div>
