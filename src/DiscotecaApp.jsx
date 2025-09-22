@@ -85,10 +85,10 @@ function HeaderBadge() {
       </svg>
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
         <div>
-          <div className={`tracking-widest ${BRAND_SILVER_TEXT} text-xs md:text-sm uppercase`}>North America’s vibes • Discoteca</div>
-          <h1 className={`mt-1 font-black leading-none text-5xl md:text-7xl ${BRAND_GOLD_TEXT}`}>50-Style</h1>
-          <h2 className="text-white/90 text-2xl md:text-4xl font-semibold mt-1">Ranking • Las Jueves</h2>
-          <div className="text-white/70 mt-2">Wynn Yerba Buena • Tucumán</div>
+          <div className={`tracking-widest ${BRAND_SILVER_TEXT} text-xs md:text-sm uppercase`}>Sabores de Discoteca</div>
+          <h1 className={`mt-1 font-black leading-none text-5xl md:text-7xl ${BRAND_GOLD_TEXT}`}>Discoteca Sabores</h1>
+          <h2 className="text-white/90 text-2xl md:text-4xl font-semibold mt-1">Ranking de los Jueves</h2>
+          <div className="text-white/70 mt-2">Yerba Buena • Tucumán</div>
         </div>
         <div className="text-right">
           <div className={`${BRAND_GOLD_TEXT} text-xs md:text-sm uppercase tracking-widest`}>Jueves de autor</div>
@@ -224,28 +224,28 @@ function DishForm({ initial, onSave, onCancel }) {
       className="grid grid-cols-1 md:grid-cols-2 gap-3"
     >
       <div className="col-span-1 md:col-span-2">
-        <label className="text-white/80 text-sm">Nombre del plato</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+        <label htmlFor="dish-name" className="text-white/80 text-sm">Nombre del plato</label>
+        <input id="dish-name" name="dishName" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
       </div>
       <div className="col-span-1 md:col-span-2">
-        <label className="text-white/80 text-sm">Descripción</label>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+        <label htmlFor="dish-desc" className="text-white/80 text-sm">Descripción</label>
+        <textarea id="dish-desc" name="dishDescription" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
       </div>
       <div>
-        <label className="text-white/80 text-sm">Chef</label>
-        <input value={chef} onChange={(e) => setChef(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+        <label htmlFor="dish-chef" className="text-white/80 text-sm">Chef</label>
+        <input id="dish-chef" name="dishChef" value={chef} onChange={(e) => setChef(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
       </div>
       <div>
-        <label className="text-white/80 text-sm">Fecha</label>
-        <input type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+        <label htmlFor="dish-date" className="text-white/80 text-sm">Fecha</label>
+        <input id="dish-date" name="dishDate" type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
       </div>
       <div>
-        <label className="text-white/80 text-sm">Foto (URL)</label>
-        <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+        <label htmlFor="dish-photo" className="text-white/80 text-sm">Foto (URL)</label>
+        <input id="dish-photo" name="dishPhoto" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
       </div>
       <div>
-        <label className="text-white/80 text-sm">Vuelta</label>
-        <select value={roundIdx} onChange={(e) => setRoundIdx(Number(e.target.value))} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+        <label htmlFor="dish-round" className="text-white/80 text-sm">Vuelta</label>
+        <select id="dish-round" name="dishRound" value={roundIdx} onChange={(e) => setRoundIdx(Number(e.target.value))} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
           <option value={0}>1</option>
           <option value={1}>2</option>
           <option value={2}>3</option>
@@ -308,8 +308,8 @@ function Voting({ dishes, votes, setVotes, eligibleVoters, settings }) {
       >
         <form onSubmit={submitVote} className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="md:col-span-2">
-            <label className="text-white/80 text-sm">Vuelta</label>
-            <select value={roundIdx} onChange={(e) => setRoundIdx(Number(e.target.value))} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+            <label htmlFor="vote-round" className="text-white/80 text-sm">Vuelta</label>
+            <select id="vote-round" name="voteRound" value={roundIdx} onChange={(e) => setRoundIdx(Number(e.target.value))} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
               <option value={0}>1</option>
               <option value={1}>2</option>
               <option value={2}>3</option>
@@ -317,34 +317,34 @@ function Voting({ dishes, votes, setVotes, eligibleVoters, settings }) {
             </select>
           </div>
           <div>
-            <label className="text-white/80 text-sm">Tu nombre</label>
-            <select value={voter} onChange={(e) => setVoter(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+            <label htmlFor="vote-voter" className="text-white/80 text-sm">Tu nombre</label>
+            <select id="vote-voter" name="voteVoter" value={voter} onChange={(e) => setVoter(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
               {eligibleVoters.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="text-white/80 text-sm">Contraseña</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
+            <label htmlFor="vote-password" className="text-white/80 text-sm">Contraseña</label>
+            <input id="vote-password" name="votePassword" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
           </div>
           <div className="md:col-span-2">
-            <label className="text-white/80 text-sm">1° puesto (3 pts)</label>
-            <select value={first} onChange={(e) => setFirst(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+            <label htmlFor="vote-first" className="text-white/80 text-sm">1° puesto (3 pts)</label>
+            <select id="vote-first" name="voteFirst" value={first} onChange={(e) => setFirst(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
               <option value="">— Elegir —</option>
               {dishesByRound.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="text-white/80 text-sm">2° puesto (2 pts)</label>
-            <select value={second} onChange={(e) => setSecond(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+            <label htmlFor="vote-second" className="text-white/80 text-sm">2° puesto (2 pts)</label>
+            <select id="vote-second" name="voteSecond" value={second} onChange={(e) => setSecond(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
               <option value="">— Elegir —</option>
               {dishesByRound.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="text-white/80 text-sm">3° puesto (1 pt)</label>
-            <select value={third} onChange={(e) => setThird(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
+            <label htmlFor="vote-third" className="text-white/80 text-sm">3° puesto (1 pt)</label>
+            <select id="vote-third" name="voteThird" value={third} onChange={(e) => setThird(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">
               <option value="">— Elegir —</option>
               {dishesByRound.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
