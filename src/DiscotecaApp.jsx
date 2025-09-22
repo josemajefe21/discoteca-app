@@ -41,6 +41,24 @@ function uid(prefix = "id") {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
 }
 
+function hashStringToNumber(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function generatePasswordFor(name) {
+  const FOODS = [
+    "CHORI", "EMPANIX", "MILANESA", "ASADO", "MATAMBRE", "PICANA",
+    "BIRRIA", "TACOLATE", "ALFAJOR", "CHIMI", "SALSA_VERDE",
+    "DULCELECHE", "QUESUDO", "GUACAMOLE", "CEVICHIN", "BOGA", "SORRENTIX"
+  ];
+  const n = hashStringToNumber(name);
+  const pick = FOODS[n % FOODS.length];
+  const digits = String(100 + (n % 900));
+  return `${name.toUpperCase()}-${pick}-${digits}`;
+}
+
 const SEED_DISHES = [
   { name: "Filet especiado al Malbec", description: "Sobre colchón de vegetales, cremoso de papas andinas.", chef: "—", dateISO: "2024-01-11", photoUrl: "", roundIdx: 0 },
   { name: "Pechuguitas de Campo", description: "Crema de vino blanco, raíces de la huerta y hortalizas al disco.", chef: "—", dateISO: "2024-01-18", photoUrl: "", roundIdx: 0 },
@@ -101,11 +119,26 @@ function Pill({ children }) {
 function useDiscotecaData() {
   const [dishes, setDishes] = useState(() => load(KEYS.dishes, SEED_DISHES));
   const [votes, setVotes] = useState(() => load(KEYS.votes, []));
-  const [settings, setSettings] = useState(() => load(KEYS.settings, { eligibleVoters: GROUP_MEMBERS.slice(0, 8) }));
+  const [settings, setSettings] = useState(() => load(KEYS.settings, { eligibleVoters: GROUP_MEMBERS, passwords: {} }));
 
   useEffect(() => save(KEYS.dishes, dishes), [dishes]);
   useEffect(() => save(KEYS.votes, votes), [votes]);
   useEffect(() => save(KEYS.settings, settings), [settings]);
+
+  // Asegurar contraseñas para cada votante habilitado
+  useEffect(() => {
+    const current = settings.passwords || {};
+    let changed = false;
+    const next = { ...current };
+    for (const name of settings.eligibleVoters || []) {
+      if (!next[name]) {
+        next[name] = generatePasswordFor(name);
+        changed = true;
+      }
+    }
+    if (changed) setSettings({ ...settings, passwords: next });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.eligibleVoters]);
 
   return { dishes, setDishes, votes, setVotes, settings, setSettings };
 }
@@ -227,7 +260,7 @@ function DishForm({ initial, onSave, onCancel }) {
   );
 }
 
-function Voting({ dishes, votes, setVotes, eligibleVoters }) {
+function Voting({ dishes, votes, setVotes, eligibleVoters, settings }) {
   const [roundIdx, setRoundIdx] = useState(0);
   const dishesByRound = useMemo(() => dishes.filter((d) => d.roundIdx === roundIdx), [dishes, roundIdx]);
 
@@ -235,16 +268,20 @@ function Voting({ dishes, votes, setVotes, eligibleVoters }) {
   const [first, setFirst] = useState("");
   const [second, setSecond] = useState("");
   const [third, setThird] = useState("");
+  const [password, setPassword] = useState("");
 
   const ballotsThisRound = votes.filter((v) => v.roundIdx === roundIdx);
   const hasVoted = ballotsThisRound.some((v) => v.voter === voter);
 
-  const remaining = Math.max(0, eligibleVoters.length - new Set(ballotsThisRound.map((v) => v.voter)).size);
+  const votersThisRound = new Set(ballotsThisRound.map((v) => v.voter));
+  const remaining = Math.max(0, eligibleVoters.length - votersThisRound.size);
+  const isRoundComplete = votersThisRound.size >= (eligibleVoters?.length || 0);
 
   function resetChoices() {
     setFirst("");
     setSecond("");
     setThird("");
+    setPassword("");
   }
 
   function submitVote(e) {
@@ -253,6 +290,8 @@ function Voting({ dishes, votes, setVotes, eligibleVoters }) {
     if (hasVoted) return alert("Ya votaste en esta vuelta.");
     if (!first || !second || !third) return alert("Completá el Top 3.");
     if (new Set([first, second, third]).size !== 3) return alert("Los 3 deben ser distintos.");
+    const expected = settings?.passwords?.[voter] || "";
+    if (!password || password !== expected) return alert("Contraseña incorrecta.");
 
     const vote = { id: uid("vote"), voter, roundIdx, first, second, third, createdAt: new Date().toISOString() };
     setVotes((prev) => [...prev, vote]);
@@ -284,6 +323,10 @@ function Voting({ dishes, votes, setVotes, eligibleVoters }) {
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="text-white/80 text-sm">Contraseña</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20" />
           </div>
           <div className="md:col-span-2">
             <label className="text-white/80 text-sm">1° puesto (3 pts)</label>
@@ -318,20 +361,31 @@ function Voting({ dishes, votes, setVotes, eligibleVoters }) {
         {lb.length === 0 ? (
           <div className="text-white/60">No hay platos en esta vuelta.</div>
         ) : (
-          <ol className="space-y-2">
-            {lb.map((row, i) => (
-              <li key={row.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${BRAND_GRADIENT} text-white`}>{i + 1}</div>
-                  <div>
-                    <div className="text-white font-semibold">{row.name}</div>
-                    <div className="text-white/60 text-xs">Votos: {row.votes}</div>
-                  </div>
+          <div className="relative">
+            <div className={isRoundComplete ? "" : "blur-sm pointer-events-none select-none"}>
+              <ol className="space-y-2">
+                {lb.map((row, i) => (
+                  <li key={row.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${BRAND_GRADIENT} text-white`}>{i + 1}</div>
+                      <div>
+                        <div className="text-white font-semibold">{row.name}</div>
+                        <div className="text-white/60 text-xs">Votos: {row.votes}</div>
+                      </div>
+                    </div>
+                    <div className={`${BRAND_GOLD_TEXT} font-bold text-lg`}>{row.points} pts</div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            {!isRoundComplete && (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="px-4 py-2 rounded-lg bg-black/60 border border-white/10 text-white/80 text-sm">
+                  El ranking se revela cuando voten las 9 personas.
                 </div>
-                <div className={`${BRAND_GOLD_TEXT} font-bold text-lg`}>{row.points} pts</div>
-              </li>
-            ))}
-          </ol>
+              </div>
+            )}
+          </div>
         )}
       </Section>
     </div>
@@ -489,6 +543,17 @@ function Settings({ settings, setSettings }) {
           onClick={() => setSettings({ ...settings, eligibleVoters: list.split(",").map((s) => s.trim()).filter(Boolean) })}
           className="px-4 py-2 rounded-xl bg-white/90 text-[#0a2342] font-semibold hover:bg-white"
         >Guardar cambios</button>
+        <div className="mt-4">
+          <div className="text-white/80 text-sm mb-2">Contraseñas de votación</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {(settings.passwords || {}) && (settings.eligibleVoters || []).map((name) => (
+              <div key={name} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                <span className="text-white/80 text-sm">{name}</span>
+                <span className="text-white/60 text-xs font-mono">{settings.passwords?.[name]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </Section>
   );
@@ -564,7 +629,7 @@ export default function App() {
         </nav>
 
         {tab === "home" && (
-          <Voting dishes={dishes} votes={votes} setVotes={setVotes} eligibleVoters={settings.eligibleVoters} />
+          <Voting dishes={dishes} votes={votes} setVotes={setVotes} eligibleVoters={settings.eligibleVoters} settings={settings} />
         )}
         {tab === "dishes" && <ManageDishes dishes={dishes} setDishes={setDishes} />}
         {tab === "rankings" && <Rankings dishes={dishes} votes={votes} />}
@@ -578,5 +643,6 @@ export default function App() {
     </div>
   );
 }
+
 
 
